@@ -15,7 +15,7 @@ int freqTable[freqModeMax+1] = {100, 200, 300,
                                 400, 500, 600,
                                 700, 800, 900,
                                 1000};              // frequency for user choosing
-int freqMode = 1;                                   // wave frequency mode
+int freqMode = 0;                                   // wave frequency mode
 bool initial = 1;                                   // for monitor_display
 bool construct = 0;
 int freq = 0;
@@ -63,27 +63,57 @@ void monitor_display()
     switch (control)
         {
         case 0x2: 
-            construct = 1;
-            uLCD.text_width(1);
-            uLCD.text_height(1);
-            uLCD.color(BLACK);
-            uLCD.textbackground_color(RED);
-            uLCD.locate(7, 15);
-            uLCD.printf("Select"); 
-            ThisThread::sleep_for(10ms);
-            uLCD.textbackground_color(GREEN);
-            uLCD.locate(7, 15);
-            uLCD.printf("Select"); 
-            uLCD.text_width(3);
-            uLCD.text_height(3);
-            uLCD.color(RED);
-            uLCD.textbackground_color(BLACK);
-            uLCD.locate(0, 2);
-            uLCD.printf("%4dHz", freqTable[freqMode]);
+            construct = !construct;
+            if (construct)
+            {
+                uLCD.cls();
+                uLCD.text_width(1);
+                uLCD.text_height(1);
+                uLCD.color(BLACK);
+                uLCD.textbackground_color(RED);
+                uLCD.locate(7, 15);
+                uLCD.printf("Select"); 
+                ThisThread::sleep_for(10ms);
+                uLCD.textbackground_color(RED); 
+                uLCD.locate(7, 15);
+                uLCD.printf(" Stop ");  
+                uLCD.text_width(3);
+                uLCD.text_height(3);
+                uLCD.color(RED);
+                uLCD.textbackground_color(BLACK);
+                uLCD.locate(0, 2);
+                uLCD.printf("%4dHz", freqTable[freqMode]);
+            }
+            else
+            {
+                uLCD.text_width(1);
+                uLCD.text_height(1);
+                uLCD.color(BLACK);
+                uLCD.textbackground_color(RED);
+                uLCD.locate(7, 15);
+                uLCD.printf("Select"); 
+                ThisThread::sleep_for(10ms);
+                uLCD.background_color(BLACK);
+                uLCD.cls();
+                uLCD.textbackground_color(GREEN);
+                uLCD.color(BLACK);
+                uLCD.locate(0, 15);
+                uLCD.printf(" Down "); 
+                uLCD.locate(7, 15);
+                uLCD.printf("Select");
+                uLCD.locate(14, 15);
+                uLCD.printf(" Up "); 
+                uLCD.text_width(3);
+                uLCD.text_height(3);
+                uLCD.color(WHITE);
+                uLCD.textbackground_color(BLACK);
+                uLCD.locate(0, 2);
+                uLCD.printf("%4dHz", freqTable[freqMode]);
+            }
             break;
         
         case 0x4:
-            construct = 0;
+            if (construct) break;
             if (freqMode+1 <= freqModeMax) freqMode++;
             uLCD.text_width(1);
             uLCD.text_height(1);
@@ -104,7 +134,7 @@ void monitor_display()
             break;
         
         case 0x1:
-            construct = 0;
+            if (construct) break;
             if (freqMode-1 >= freqModeMin) freqMode--;
             uLCD.text_width(1);
             uLCD.text_height(1);
@@ -132,22 +162,22 @@ void monitor_display()
 void set_parameter()
 {
     freq = freqTable[freqMode];
-    delta_aout_up = 6*(float)freq/10000.0f;
-    delta_aout_down = 4*(float)freq/10000.0f;
+    delta_aout_up = 9*(float)freq/10000.0f;
+    delta_aout_down = (float)freq/10000.0f;
 }
 
 void wave_generate()
 {
     aout = 0.0f;
-    while (construct && n < 10000)
+    while (construct)
     {
         monitor_display();
-        while (aout <= 0.89f && n < 10000)
+        while (aout <= 0.89f)
         {
             aout = aout + delta_aout_up;
             wait_us(100);
         }
-        while (aout > 0.0f && n < 10000)
+        while (aout > 0.0f)
         {
             aout = aout - delta_aout_down;
             wait_us(100);
