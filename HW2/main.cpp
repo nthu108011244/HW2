@@ -205,7 +205,7 @@ void wave_sample()
         sample[sampleCount++] = ain;
         ThisThread::sleep_for(1000ms/sampleAmount);
     }
-    sampleQueue.call(&sample_print);
+    printQueue.call(&sample_print);
 }
 
 void sample_print()
