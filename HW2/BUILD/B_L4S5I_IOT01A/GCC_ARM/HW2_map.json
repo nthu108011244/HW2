@@ -2,9 +2,9 @@
     {
         "module": "../mbed-os-build",
         "size": {
-            ".text": 31446,
+            ".text": 38446,
             ".data": 445,
-            ".bss": 8022,
+            ".bss": 8070,
             ".text-delta": 0,
             ".data-delta": 0,
             ".bss-delta": 0
@@ -13,32 +13,32 @@
     {
         "module": "BUILD/B_L4S5I_IOT01A",
         "size": {
-            ".text": 2270,
-            ".data": 45,
-            ".bss": 533,
-            ".text-delta": -108,
-            ".data-delta": 0,
-            ".bss-delta": -4
+            ".text": 3106,
+            ".data": 49,
+            ".bss": 2042,
+            ".text-delta": 0,
+            ".data-delta": 8,
+            ".bss-delta": 0
         }
     },
     {
         "module": "[fill]",
         "size": {
-            ".text": 140,
-            ".data": 10,
-            ".bss": 32,
-            ".text-delta": 20,
+            ".text": 152,
+            ".data": 15,
+            ".bss": 37,
+            ".text-delta": 0,
             ".data-delta": 0,
-            ".bss-delta": -4
+            ".bss-delta": 0
         }
     },
     {
         "module": "[lib]/c.a",
         "size": {
-            ".text": 31360,
-            ".data": 2472,
-            ".bss": 89,
-            ".text-delta": -40,
+            ".text": 75576,
+            ".data": 2574,
+            ".bss": 127,
+            ".text-delta": 0,
             ".data-delta": 0,
             ".bss-delta": 0
         }
@@ -46,7 +46,7 @@
     {
         "module": "[lib]/gcc.a",
         "size": {
-            ".text": 3104,
+            ".text": 7356,
             ".data": 0,
             ".bss": 0,
             ".text-delta": 0,
@@ -66,11 +66,33 @@
         }
     },
     {
+        "module": "[lib]/nosys.a",
+        "size": {
+            ".text": 32,
+            ".data": 0,
+            ".bss": 0,
+            ".text-delta": 0,
+            ".data-delta": 0,
+            ".bss-delta": 0
+        }
+    },
+    {
+        "module": "[lib]/stdc++.a",
+        "size": {
+            ".text": 175916,
+            ".data": 145,
+            ".bss": 5720,
+            ".text-delta": 0,
+            ".data-delta": 0,
+            ".bss-delta": 0
+        }
+    },
+    {
         "summary": {
-            "static_ram": 11680,
-            "static_ram_delta": -8,
-            "total_flash": 71476,
-            "total_flash_delta": -128
+            "static_ram": 19256,
+            "static_ram_delta": 8,
+            "total_flash": 303996,
+            "total_flash_delta": 8
         }
     }
 ]

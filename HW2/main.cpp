@@ -2,46 +2,58 @@
 //
 #include "mbed.h"
 #include "uLCD_4DGL.h"
+#include <iostream>
 #include <stdio.h>
-#define freqModeMax 9
+using namespace std::chrono;
+#define freqModeMax 11
 #define freqModeMin 0
+#define sampleAmount 200
 
 uLCD_4DGL uLCD(D1, D0, D2);                         // serial tx, serial rx, reset pin;
 BusIn control(D12, D11, D10);                       // buttom: user control
 AnalogOut aout(D7);
+AnalogIn ain(A0);
 
+Thread sampleThread;
+Thread screenThread;
+EventQueue sampleQueue; 
+EventQueue screenQueue;
+Timer sampleTime;
 
-int freqTable[freqModeMax+1] = {100, 200, 300, 
-                                400, 500, 600,
-                                700, 800, 900,
-                                1000};              // frequency for user choosing
-int freqMode = 0;                                   // wave frequency mode
-bool initial = 1;                                   // for monitor_display
-bool construct = 0;
+bool if_initial = 1;                                   // for monitor_display
+bool if_generate = 0;
+bool if_print = 0;
+int freqTable[freqModeMax+1] = {1, 5, 10, 20, 30, 40, 50, 60, 70, 80 ,90 ,100}; // frequency for user choosing
+int freqMode = 0;                                      // wave frequency mode
 int freq = 0;
 float delta_aout_up = 0;
 float delta_aout_down = 0;
+int sampleCount = 0;
+float sample[sampleAmount] = {0};
+
 
 void monitor_display();
 void set_parameter();
 void wave_generate();
-
+void wave_sample();
+void sample_print();
 
 int main()
 {
+    sampleThread.start(callback(&sampleQueue, &EventQueue::dispatch_forever));
+    screenThread.start(callback(&screenQueue, &EventQueue::dispatch_forever));
     while (1) 
     {
         monitor_display();
-        set_parameter();
-        wave_generate();
+        wave_generate(); 
     }
 }
 
 void monitor_display()
 {
-    if (initial)
+    if (if_initial)
     {
-        initial = 0;
+        if_initial = 0;
         uLCD.background_color(BLACK);
         uLCD.cls();
         uLCD.textbackground_color(GREEN);
@@ -63,9 +75,11 @@ void monitor_display()
     switch (control)
         {
         case 0x2: 
-            construct = !construct;
-            if (construct)
+            if_generate = !if_generate;
+            if (if_generate)
             {
+                set_parameter();
+                sampleQueue.call(&wave_sample);
                 uLCD.cls();
                 uLCD.text_width(1);
                 uLCD.text_height(1);
@@ -113,7 +127,7 @@ void monitor_display()
             break;
         
         case 0x4:
-            if (construct) break;
+            if (if_generate) break;
             if (freqMode+1 <= freqModeMax) freqMode++;
             uLCD.text_width(1);
             uLCD.text_height(1);
@@ -134,7 +148,7 @@ void monitor_display()
             break;
         
         case 0x1:
-            if (construct) break;
+            if (if_generate) break;
             if (freqMode-1 >= freqModeMin) freqMode--;
             uLCD.text_width(1);
             uLCD.text_height(1);
@@ -169,18 +183,48 @@ void set_parameter()
 void wave_generate()
 {
     aout = 0.0f;
-    while (construct)
+    if (if_generate)
     {
-        monitor_display();
         while (aout <= 0.89f)
         {
             aout = aout + delta_aout_up;
-            wait_us(100);
+            wait_us(80);
         }
         while (aout > 0.0f)
         {
             aout = aout - delta_aout_down;
-            wait_us(100);
+            wait_us(80);
         }
     }
+}
+
+void wave_sample()
+{
+    if (!if_generate) return;
+    sampleCount = 0;
+    while (sampleCount < sampleAmount && if_generate)
+    {
+        sample[sampleCount++] = ain;
+        ThisThread::sleep_for(1000ms/sampleAmount);
+    }
+    sampleQueue.call(&sample_print);
+}
+
+void sample_print()
+{
+    //printf("print Start\r\n");
+    for (int j = 1; j <= 2; j++)
+    {
+        for (int i = 0; i < sampleAmount && if_generate; i++)
+        {
+            printf("%f\r\n", sample[i]);
+            ThisThread::sleep_for(10ms);
+        }
+    }
+    
+    //printf("print Over\r\n");
+    ThisThread::sleep_for(3s);
+    //printf("sampling call\r\n");
+    sampleCount = 0;
+    sampleQueue.call(&wave_sample);
 }
