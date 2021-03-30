@@ -29,6 +29,9 @@ void sample_print();\
 在此形成一個 (取樣) -> (輸出樣本) -> (靜待3秒) -> (取樣) -> (輸出樣本) -> (靜待3秒) -> (取樣) -> .......的輪迴。
 
 # 結果呈現
+1Hz:\
 ![image](https://user-images.githubusercontent.com/79581483/113017000-9b8ed480-91b1-11eb-88b2-26b39c54417a.png)
+50Hz:\
 ![image](https://user-images.githubusercontent.com/79581483/113017114-b6614900-91b1-11eb-8b62-abf60fcadd8c.png)
+90Hz:\
 ![image](https://user-images.githubusercontent.com/79581483/113017149-bf521a80-91b1-11eb-8f3f-f7cc211d4945.png)
