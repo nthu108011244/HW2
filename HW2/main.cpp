@@ -18,9 +18,11 @@ Thread sampleThread;
 Thread screenThread;
 EventQueue sampleQueue; 
 EventQueue screenQueue;
+Timer sampleTime;
 
 bool if_initial = 1;                                   // for monitor_display
 bool if_generate = 0;
+bool if_print = 0;
 int freqTable[freqModeMax+1] = {1, 5, 10, 20, 30, 40, 50, 60, 70, 80 ,90 ,100}; // frequency for user choosing
 int freqMode = 0;                                      // wave frequency mode
 int freq = 0;
@@ -205,20 +207,16 @@ void wave_sample()
         sample[sampleCount++] = ain;
         ThisThread::sleep_for(1000ms/sampleAmount);
     }
-    printQueue.call(&sample_print);
+    screenQueue.call(&sample_print);
 }
 
 void sample_print()
 {
-    for (int j = 1; j <= 2; j++)
+    for (int i = 0; i < sampleAmount && if_generate; i++)
     {
-        for (int i = 0; i < sampleAmount && if_generate; i++)
-        {
-            printf("%f\r\n", sample[i]);
-            ThisThread::sleep_for(10ms);
-        }
+        printf("%f\r\n", sample[i]);
+        ThisThread::sleep_for(10ms);
     }
-    
     ThisThread::sleep_for(3s);
     sampleCount = 0;
     sampleQueue.call(&wave_sample);
