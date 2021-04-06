@@ -7,7 +7,7 @@
 using namespace std::chrono;
 #define freqModeMax 11
 #define freqModeMin 0
-#define sampleAmount 200
+#define sampleAmount 1000
 
 uLCD_4DGL uLCD(D1, D0, D2);                         // serial tx, serial rx, reset pin;
 BusIn control(D12, D11, D10);                       // buttom: user control
@@ -28,6 +28,7 @@ int freqMode = 0;                                      // wave frequency mode
 int freq = 0;
 float delta_aout_up = 0;
 float delta_aout_down = 0;
+float rest_time = 1000 / sampleAmount;
 int sampleCount = 0;
 float sample[sampleAmount] = {0};
 
@@ -45,7 +46,7 @@ int main()
     while (1) 
     {
         monitor_display();
-        wave_generate(); 
+        wave_generate();
     }
 }
 
@@ -97,6 +98,7 @@ void monitor_display()
                 uLCD.textbackground_color(BLACK);
                 uLCD.locate(0, 2);
                 uLCD.printf("%4dHz", freqTable[freqMode]);
+                sampleQueue.call(&wave_sample);
             }
             else
             {
@@ -176,38 +178,49 @@ void monitor_display()
 void set_parameter()
 {
     freq = freqTable[freqMode];
-    delta_aout_up = 9*(float)freq/10000.0f;
-    delta_aout_down = (float)freq/10000.0f;
+    delta_aout_up = 9 * (0.001f * freq);
+    delta_aout_down = 0.001f * freq;
 }
 
 void wave_generate()
 {
     aout = 0.0f;
-    if (if_generate)
+    while (if_generate)
     {
-        while (aout <= 0.89f)
+        for (float i = 0.0f; i < 0.9f; i += delta_aout_up)
         {
-            aout = aout + delta_aout_up;
-            wait_us(80);
+            if (!if_generate) break;
+            monitor_display();
+            aout = i;
+            ThisThread::sleep_for(1ms);
         }
-        while (aout > 0.0f)
+        for (float i = 0.9f; i > 0.0f; i -= delta_aout_down)
         {
-            aout = aout - delta_aout_down;
-            wait_us(80);
+            if (!if_generate) break;
+            monitor_display();
+            aout = i;
+            ThisThread::sleep_for(1ms);
         }
     }
 }
 
 void wave_sample()
 {
-    if (!if_generate) return;
-    sampleCount = 0;
-    while (sampleCount < sampleAmount && if_generate)
+    while (if_generate)
     {
-        sample[sampleCount++] = ain;
-        ThisThread::sleep_for(1000ms/sampleAmount);
+        for (int i = 0; i < sampleAmount; i++)
+        {
+            if (!if_generate) break;
+            sample[i] = ain;
+            ThisThread::sleep_for(1ms);
+        }
+        for (int i = 0; i < sampleAmount; i++)
+        {
+            if (!if_generate) break;
+            cout << sample[i] * 3.3 << "\r\n";
+        }
+        ThisThread::sleep_for(5000ms);
     }
-    screenQueue.call(&sample_print);
 }
 
 void sample_print()
